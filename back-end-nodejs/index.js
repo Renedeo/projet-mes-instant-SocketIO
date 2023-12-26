@@ -15,7 +15,7 @@ app.use(cors({
 
 mongoose.connect('mongodb://root:example@localhost:27017/mes-instant?authSource=admin', {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  // useUnifiedTopology: true,
 });
 
 const userSchema = new mongoose.Schema({
@@ -111,17 +111,25 @@ const messageSchema = new mongoose.Schema({
     required: true,
   },
   author: {
-    type: {
-      username: {
-        type: String,
-        required: true,
-      },
+    _id: {
+      type: mongoose.Schema.ObjectId,
+      required: true,
     },
-    required: true,
+    username: {
+      type: String,
+      required: true,
+    },
   },
   to: {
-    type: String, // Change the type according to your needs
-    default: 'all',
+    _id: {
+      type: mongoose.Schema.ObjectId,
+      // required: true,
+    },
+    receiver: {
+      type: String,
+      // required: true,
+      default: 'all',
+    },
   },
   createdAt: {
     type: Date,
@@ -144,31 +152,58 @@ app.get('/messages', async (req, res) => {
 app.post('/messages', async (req, res) => {
   try {
     const { content, author, to } = req.body;
-
     // Validate input
-    if (!content || !author || !to) {
-      return res.status(400).json({ message: 'Contenu du message, auteur et destinataire sont requis' });
+    if (!content || !author) {
+      return res.status(400).json({ message: 'Contenu du message et auteur sont requis' });
     }
-
+    
     // Check if the author exists
-    const existingAuthor = await UserModel.findOne({ nom: author });
-
+    const existingAuthor = await UserModel.findOne({ nom: author.username });
+    
     if (!existingAuthor) {
       return res.status(400).json({ message: 'L\'auteur spécifié n\'existe pas' });
     }
-
-    // Check if the recipient exists when 'to' is not 'all'
-    if (to !== 'all') {
-      const existingRecipient = await UserModel.findOne({ nom: to });
-
+    
+    let authorId = existingAuthor._id;
+    
+    // Check if the receiver exists
+    let toId = null;
+    let toUser = null;
+    if (to !== undefined && to !== 'all') {
+      const existingRecipient = await UserModel.findOne({ nom: to.username });
+      
       if (!existingRecipient) {
         return res.status(400).json({ message: 'Le destinataire spécifié n\'existe pas' });
       }
+      
+      toId = existingRecipient._id;
+      toUser = existingRecipient.nom
+      console.log(toUser);
+    }
+    
+    if (toId !== null) {
+      
+      // Create a new message
+      const newMessage = new MessageModel({
+        content,
+        author: { _id: authorId, username: author.username },
+        to: {
+          _id:toId, // Set toId if it exists, otherwise set to directly
+          receiver: toUser
+        }
+        });
+      await newMessage.save();
+    }
+    else {
+      const newMessage = new MessageModel({
+        content,
+        author: { _id: authorId, username: author.username },
+      });
+      await newMessage.save();
+      
     }
 
-    // Create a new message
-    const newMessage = new MessageModel({ content, author: { username: author }, to });
-    await newMessage.save();
+
 
     res.status(201).json({ message: 'Message enregistré avec succès' });
   } catch (error) {
@@ -176,6 +211,8 @@ app.post('/messages', async (req, res) => {
     res.status(500).json({ message: 'Une erreur est survenue lors de l\'enregistrement du message' });
   }
 });
+
+
 
 
 
