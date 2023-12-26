@@ -1,20 +1,35 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
 
-mongoose.connect('mongodb://root:example@localhost:27017/mes-instant?authSource=admin ', { useNewUrlParser: true, useUnifiedTopology: true })
-.then(() => {console.log('connection established');})
-.catch((err) => console.log(err));
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
 
-const userSchema = new mongoose.Schema({
-  nom: String,
-  motDePasse: String
+mongoose.connect('mongodb://root:example@localhost:27017/mes-instant?authSource=admin', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-userSchema.pre('save', async function(next) {
+const userSchema = new mongoose.Schema({
+  nom: {
+    type: String,
+    required: true,
+  },
+  motDePasse: {
+    type: String,
+    required: true,
+  },
+});
+
+userSchema.pre('save', async function (next) {
   const utilisateur = this;
 
   if (!utilisateur.isModified('motDePasse')) {
@@ -30,15 +45,26 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-const UserModel = mongoose.model('Utilisateur', userSchema);
+const UserModel = mongoose.model('users', userSchema);
 
 app.post('/register', async (req, res) => {
   try {
-    const nouvelUtilisateur = new UserModel({
-      nom: req.body.nom,
-      motDePasse: req.body.motDePasse
-    });
+    const { nom, motDePasse } = req.body;
+    console.log(nom, motDePasse)
+    // Validate input
+    if (!nom || !motDePasse) {
+      return res.status(400).json({ message: 'Nom et mot de passe sont requis' });
+    }
 
+    // Check if the user already exists
+    const utilisateurExistant = await UserModel.findOne({ nom });
+
+    if (utilisateurExistant) {
+      return res.status(400).json({ message: 'Cet utilisateur existe déjà' });
+    }
+
+    // If the user does not exist, register them
+    const nouvelUtilisateur = new UserModel({ nom, motDePasse });
     await nouvelUtilisateur.save();
 
     res.status(201).json({ message: 'Utilisateur enregistré avec succès' });
@@ -50,26 +76,115 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   try {
-    const utilisateur = await UserModel.findOne({ nom: req.body.nom });
+    const { nom, motDePasse } = req.body;
+
+    // Validate input
+    if (!nom || !motDePasse) {
+      return res.status(400).json({ message: 'Nom et mot de passe sont requis' });
+    }
+
+    // Check if the user exists
+    const utilisateur = await UserModel.findOne({ nom });
 
     if (!utilisateur) {
       return res.status(401).json({ message: 'Nom d\'utilisateur ou mot de passe incorrect' });
     }
 
-    const motDePasseValide = await bcrypt.compare(req.body.motDePasse, utilisateur.motDePasse);
+    // Check if the password is valid
+    const motDePasseValide = await bcrypt.compare(motDePasse, utilisateur.motDePasse);
 
     if (!motDePasseValide) {
       return res.status(401).json({ message: 'Nom d\'utilisateur ou mot de passe incorrect' });
     }
 
-    res.status(200).json({ message: 'Connexion réussie' });
+    // Return the user ID along with the success message
+    res.status(200).json({ message: 'Connexion réussie', userId: utilisateur._id });
   } catch (erreur) {
     console.error(erreur);
     res.status(500).json({ message: 'Une erreur est survenue lors de la connexion' });
   }
 });
 
-const port = 4000;
-app.listen(port, () => {
-  console.log(`Serveur en cours d'exécution sur le port ${port}`);
+const messageSchema = new mongoose.Schema({
+  content: {
+    type: String,
+    required: true,
+  },
+  author: {
+    type: {
+      username: {
+        type: String,
+        required: true,
+      },
+    },
+    required: true,
+  },
+  to: {
+    type: String, // Change the type according to your needs
+    default: 'all',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
+
+const MessageModel = mongoose.model('messages', messageSchema);
+
+app.get('/messages', async (req, res) => {
+  try {
+    const messages = await MessageModel.find();
+    res.status(200).json({ messages });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des messages' });
+  }
+});
+
+app.post('/messages', async (req, res) => {
+  try {
+    const { content, author, to } = req.body;
+
+    // Validate input
+    if (!content || !author || !to) {
+      return res.status(400).json({ message: 'Contenu du message, auteur et destinataire sont requis' });
+    }
+
+    // Check if the author exists
+    const existingAuthor = await UserModel.findOne({ nom: author });
+
+    if (!existingAuthor) {
+      return res.status(400).json({ message: 'L\'auteur spécifié n\'existe pas' });
+    }
+
+    // Check if the recipient exists when 'to' is not 'all'
+    if (to !== 'all') {
+      const existingRecipient = await UserModel.findOne({ nom: to });
+
+      if (!existingRecipient) {
+        return res.status(400).json({ message: 'Le destinataire spécifié n\'existe pas' });
+      }
+    }
+
+    // Create a new message
+    const newMessage = new MessageModel({ content, author: { username: author }, to });
+    await newMessage.save();
+
+    res.status(201).json({ message: 'Message enregistré avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Une erreur est survenue lors de l\'enregistrement du message' });
+  }
+});
+
+
+
+const server = app.listen(4000, () => {
+  console.log('Serveur en cours d\'exécution sur le port 4000');
+});
+
+app.closeServer = function () {
+  server.close();
+};
+
+module.exports = app;
