@@ -2,6 +2,7 @@
 // pages/Login.js
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -53,6 +54,7 @@ const Login = () => {
     <div className="container">
       <div className="card">
         <h1 className="title">Connexion</h1>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
         <form onSubmit={handleSubmit}>
           <div className='container-input'>
             <input
@@ -76,13 +78,12 @@ const Login = () => {
             />
             <label htmlFor="password"><span>Mot de passe:</span></label>
           </div>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
           <button type="submit" className="btn">Se connecter</button>
+        {/* Add a Link to the Register page */}
+        <p>Vous n'avez pas de compte? <Link href="/register">S'inscrire</Link></p>
         </form>
       </div>
-
       <div className="blob"></div>
-
     </div>
   );
 };

@@ -6,7 +6,8 @@
 }
 
 body {
-  background-color: #1f1f47;
+  /* background-color: #1f1f47; */
+  background-color: #37d7a3;
 }
 
 .container {
@@ -17,7 +18,6 @@ body {
   align-items: center;
   position: relative;
   overflow: hidden;
-  background-color: #1f1f47;
 }
 
 .card {
@@ -123,6 +123,7 @@ input + label > span {
   text-align: center;
   margin: 0 0 5px 0;
   font-size: large;
+  font-weight: 900;
 }
 
 .btn {
@@ -133,8 +134,10 @@ input + label > span {
   color: whitesmoke;
   background-color: #fa709a;
   padding: 0.8rem 1.8rem;
+  margin-bottom: 3px;
   border-radius: 2rem;
   cursor: pointer;
+  
 }
 
 .blob {
