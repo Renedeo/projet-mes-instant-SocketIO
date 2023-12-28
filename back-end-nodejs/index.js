@@ -2,16 +2,38 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-
+const { Socket } = require('socket.io');
 const app = express();
 app.use(express.json());
-
+/// Création de l'API
 // CORS configuration
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 }));
+
+const http = require('http').Server(app);
+
+const io = require('socket.io')(http, {
+  cors: {
+    origin: "http://localhost:3000"
+  }
+});
+
+/// Communication avec le front 
+io.on('connection', (socket) => {
+  console.log('🌐 A client has connected');
+
+  socket.on('login', (data) => {
+    console.log(`👤 User logged in: ${data.nom}`);
+    // users.push(data.nom);
+    socket.emit('newUser', data.nom);
+  });
+
+})
+
+
 
 mongoose.connect('mongodb://root:example@localhost:27017/mes-instant?authSource=admin', {
   useNewUrlParser: true,
@@ -216,11 +238,11 @@ app.post('/messages', async (req, res) => {
 
 
 
-const server = app.listen(4000, () => {
+const server = http.listen(4000, () => {
   console.log('Serveur en cours d\'exécution sur le port 4000');
 });
 
-app.closeServer = function () {
+http.closeServer = function () {
   server.close();
 };
 
