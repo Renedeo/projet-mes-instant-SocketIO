@@ -19,6 +19,43 @@ body {
   position: relative;
   overflow: hidden;
 }
+/* Add this to your existing styles or create a new stylesheet */
+.ChatPageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Adjust if needed to fill the viewport height */
+}
+
+/* Add this class to center the content horizontally within ChatPageContainer */
+.ChatPageContent {
+  max-width: 500px; /* Adjust as needed */
+  width: 500px;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  z-index: 10;
+  color: whitesmoke;
+}
+.message-input,
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+}
+
+.message-list{
+  height: 250px;
+  margin: 10px auto;
+}
+
+
 
 .card {
   width: 500px;
@@ -33,6 +70,13 @@ body {
   z-index: 10;
   color: whitesmoke;
 }
+
+.message-input > button {
+  padding: 0;
+  background-color: transparent;
+  transform: rotate(-10deg);
+}
+
 
 .title {
   font-size: 2.2rem;
@@ -82,7 +126,7 @@ input + label {
 }
 
 input:not(:placeholder-shown) + label {
-  width: 80%;
+  width: 90%;
 }
 
 input:focus,

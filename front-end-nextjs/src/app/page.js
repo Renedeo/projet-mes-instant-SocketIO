@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSocket } from '@/Context/SocketContext';
+import { useAuth } from '@/Context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
@@ -12,6 +13,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const socket = useSocket()
   const route = useRouter()
+  const { login } = useAuth()
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -42,6 +44,8 @@ const Login = () => {
       if (response.ok) {
         console.log('Connexion réussie !');
         socket.emit('login', {"nom" : username})
+        login(username)
+        
         route.push('/chat');
         // Rediriger ou effectuer d'autres actions après la connexion réussie
       } else {

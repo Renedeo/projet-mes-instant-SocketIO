@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google'
 // import './globals.css'
 import '../styles/Login.styles.css'
 import { SocketProvider } from '@/Context/SocketContext'
+import { AuthProvider } from '@/Context/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -12,10 +13,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <SocketProvider>
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
-    </SocketProvider>
+    <AuthProvider>
+      <SocketProvider>
+        <html lang="en">
+          <body className={inter.className}>{children}</body>
+        </html>
+      </SocketProvider>
+    </AuthProvider>
   )
 }
