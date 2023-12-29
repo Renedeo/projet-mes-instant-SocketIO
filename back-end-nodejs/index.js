@@ -27,14 +27,14 @@ io.on('connection', (socket) => {
   socket.on('login', (data) => {
     console.log(`👤 User logged in: ${data.username}`);
     // users.push(data.nom);
-    socket.emit('newUser', data);
+    io.emit('newUser', data);
   });
 
   socket.on('chat message', (data) => {
     console.log('Received chat messages response:');
     console.log('👤 Author:', data.author.username);
     console.log('💬 Content:', data.content);
-    socket.emit('chat message response', data)
+    io.emit('chat message response', data)
   });
 });
 
