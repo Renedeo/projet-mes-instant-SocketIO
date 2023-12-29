@@ -6,12 +6,12 @@ import SendIcon from '@mui/icons-material/Send';
 import { useSocket } from '@/Context/SocketContext';
 
 const ChatComponent = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, connectedUsers, logout } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const router = useRouter()
   const socket  = useSocket()
-
+  console.log(connectedUsers)
   useEffect(() => {
     fetchChatMessages();
   }, [isAuthenticated]);
@@ -91,6 +91,15 @@ const ChatComponent = () => {
             </div>
           ))}
         </div>
+
+        <div className='connected-users ChatPageContent'>
+        <h3>Connected Users:</h3>
+        <ul>
+          {connectedUsers.map((username) => (
+            <li key={username}>{username}</li>
+          ))}
+        </ul>
+      </div>
             
         <div className="message-input ChatPageContent ">
           <div>

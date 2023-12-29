@@ -25,9 +25,9 @@ io.on('connection', (socket) => {
   console.log('🌐 A client has connected');
 
   socket.on('login', (data) => {
-    console.log(`👤 User logged in: ${data.nom}`);
+    console.log(`👤 User logged in: ${data.username}`);
     // users.push(data.nom);
-    socket.emit('newUser', data.nom);
+    socket.emit('newUser', data);
   });
 
   socket.on('chat message', (data) => {

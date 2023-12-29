@@ -43,8 +43,10 @@ const Login = () => {
       // Gérez la réponse du backend ici
       if (response.ok) {
         console.log('Connexion réussie !');
-        socket.emit('login', {"nom" : username})
-        login(username)
+        socket.emit('login', {"username" : username})
+        socket.on('newUser',(data) => {
+          login(data) 
+        })
         
         route.push('/chat');
         // Rediriger ou effectuer d'autres actions après la connexion réussie
