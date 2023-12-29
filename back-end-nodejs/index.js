@@ -21,7 +21,6 @@ const io = require('socket.io')(http, {
   }
 });
 
-/// Communication avec le front 
 io.on('connection', (socket) => {
   console.log('🌐 A client has connected');
 
@@ -31,7 +30,14 @@ io.on('connection', (socket) => {
     socket.emit('newUser', data.nom);
   });
 
-})
+  socket.on('chat message', (data) => {
+    console.log('Received chat messages response:');
+    console.log('👤 Author:', data.author.username);
+    console.log('💬 Content:', data.content);
+    socket.emit('chat message response', data)
+  });
+});
+
 
 
 

@@ -26,6 +26,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh; /* Adjust if needed to fill the viewport height */
+  z-index: 10;
 }
 
 /* Add this class to center the content horizontally within ChatPageContainer */
@@ -197,6 +198,7 @@ input + label > span {
   -webkit-animation: move 25s infinite alternate;
   animation: move 25s infinite alternate;
   transition: 1s cubic-bezier(0.07, 0.8, 0.16, 1);
+  z-index: 1;
 }
 
 .blob:hover {

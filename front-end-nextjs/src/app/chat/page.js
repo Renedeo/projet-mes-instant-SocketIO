@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/Context/AuthContext';
 import { useRouter } from 'next/navigation';
 import SendIcon from '@mui/icons-material/Send';
+import { useSocket } from '@/Context/SocketContext';
 
 const ChatComponent = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const router = useRouter()
+  const socket  = useSocket()
 
   useEffect(() => {
     fetchChatMessages();
@@ -28,6 +30,7 @@ const ChatComponent = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       setMessages(data.messages);
     } catch (error) {
       console.error('Error fetching messages:', error.message);
@@ -41,7 +44,6 @@ const ChatComponent = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // You may include authentication headers if needed
         },
         body: JSON.stringify({
           content: newMessage,
@@ -53,9 +55,16 @@ const ChatComponent = () => {
         throw new Error('Failed to send message');
       }
 
-      const data = await response.json();
-      setMessages([...messages, data.message]);
-      setNewMessage('');
+
+      socket.emit('chat message', {
+        content: newMessage,
+        author: { username: user },
+      });
+
+      socket.on('chat message response', (data) => {
+        setMessages([...messages, data]);
+        setNewMessage('');
+      })
     } catch (error) {
       console.error('Error sending message:', error.message);
     }
@@ -82,7 +91,7 @@ const ChatComponent = () => {
             </div>
           ))}
         </div>
-
+            
         <div className="message-input ChatPageContent ">
           <div>
             <input
@@ -98,7 +107,10 @@ const ChatComponent = () => {
           <SendIcon />
           </button>
         </div>
+
       </div>
+
+      {/* <div className="blob"></div> */}
     </div>
   );
 };
