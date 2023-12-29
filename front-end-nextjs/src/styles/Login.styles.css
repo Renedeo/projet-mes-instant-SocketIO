@@ -58,7 +58,16 @@ body {
   overflow-y: scroll;
 }
 
+.user-container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* height: 100px; */
+}
+
+.typing-users,
 .connected-users{
+  width: fit-content;
   margin: 10px auto;
   height: 150px;
   overflow: scroll;
