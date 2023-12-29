@@ -16,21 +16,27 @@ export const AuthProvider = ({ children }) => {
     // Charge les données de session à partir du sessionStorage lors du montage du composant
     const storedUser = JSON.parse(sessionStorage.getItem('user'));
     const storedIsAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-
-    if (storedUser && storedIsAuthenticated) {
+    const storedConnectedUsers = JSON.parse(sessionStorage.getItem('connectedUsers'))
+    console.log(storedConnectedUsers)
+    
+    if (storedUser && storedIsAuthenticated && storedConnectedUsers) {
       setUser(storedUser);
       setIsAuthenticated(storedIsAuthenticated);
+      setConnectedUsers(storedConnectedUsers);
+
     }
 
     if (socket) {
       // Écoute l'événement 'newUser' pour mettre à jour la liste des utilisateurs connectés
       const handleNewUser = (data) => {
         setConnectedUsers(data);
+        sessionStorage.setItem('connectedUsers', JSON.stringify(data));
       };
 
       const handleUserOut = (data) => {
         console.log(data);
         setConnectedUsers(data);
+        sessionStorage.setItem('connectedUsers', JSON.stringify(data));
       };
 
       socket.on('userOut', handleUserOut);
