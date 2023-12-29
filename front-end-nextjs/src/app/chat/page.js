@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/Context/AuthContext';
 import { useRouter } from 'next/navigation';
 import SendIcon from '@mui/icons-material/Send';
@@ -17,8 +17,8 @@ const ChatComponent = () => {
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState([]);
   const [typing, setTyping] = useState(false);
-  const router = useRouter()
   const socket = useSocket()
+  const messageListRef = useRef(null);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -42,10 +42,11 @@ const ChatComponent = () => {
   };
 
   useEffect(() => {
-    const handleChatMessageResponse = (data) => {
-      setMessages([...messages, data]);
-      setNewMessage('');
-    };
+    // const handleChatMessageResponse = (data) => {
+    //   setMessages([...messages, data]);
+    //   setNewMessage('');
+    //   scrollToBottom()
+    // };
 
     const handleTyping = ({ username, isTyping }) => {
       setTypingUsers((prevTypingUsers) => {
@@ -66,79 +67,57 @@ const ChatComponent = () => {
 
     socket.on('typing', handleTyping);
 
-    socket.on('chat message response', handleChatMessageResponse);
-
-    fetchChatMessages();
+    // socket.on('chat message response', handleChatMessageResponse);
 
     // Clean up the event listener when the component is unmounted
     return () => {
-      socket.off('chat message response', handleChatMessageResponse);
+      // socket.off('chat message response', handleChatMessageResponse);
       socket.off('typing', handleTyping);
     };
   }, [messages, socket]);
 
-  const fetchChatMessages = async () => {
-    try {
-      const response = await fetch('http://localhost:4000/messages', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
+  // const handleSendMessage = async () => {
+  //   try {
+  //     const response = await fetch('http://localhost:4000/messages', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         content: newMessage,
+  //         author: { username: user },
+  //       }),
+  //     });
 
-      const data = await response.json();
-      setMessages(data.messages);
-    } catch (error) {
-      console.error('Error fetching messages:', error.message);
-
-    }
-  };
-
-  const handleSendMessage = async () => {
-    try {
-      const response = await fetch('http://localhost:4000/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: newMessage,
-          author: { username: user },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to send message');
+  //     }
 
 
-      socket.emit('chat message', {
-        content: newMessage,
-        author: { username: user },
-      });
+  //     socket.emit('chat message', {
+  //       content: newMessage,
+  //       author: { username: user },
+  //     });
 
+  //     scrollToBottom()
+  //   } catch (error) {
+  //     console.error('Error sending message:', error.message);
+  //   }
+  // };
 
-    } catch (error) {
-      console.error('Error sending message:', error.message);
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-    socket.emit('logout', { "username": user });
-    router.push('/');
-  };
-
+  
 
   return (
     <div className='ChatPageContainer'>
       <Header />
       <div className="chat-container">
-        <MessageList messages={messages} />
+        <MessageList 
+        messages={messages} 
+        setMessages={setMessages}
+        currentUser={user}
+        messageListRef={messageListRef} 
+        />
 
         <div className='user-container'>
           <ConnectedUsers connectedUsers={connectedUsers} />
@@ -146,11 +125,15 @@ const ChatComponent = () => {
         </div>
 
         <MessageInput
+          user={user}
+          messages={messages} 
+          setMessages={setMessages}
           newMessage={newMessage}
-          handleNewMessage={setNewMessage}
+          setNewMessage={setNewMessage}
           handleKeyDown={handleKeyDown}
           handleKeyUp={handleKeyUp}
-          handleSendMessage={handleSendMessage}
+          messageListRef={messageListRef}
+          // handleSendMessage={handleSendMessage}
         />
       </div>
     </div>

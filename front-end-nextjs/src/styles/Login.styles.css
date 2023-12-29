@@ -43,6 +43,7 @@ body {
   z-index: 10;
   color: whitesmoke;
 }
+
 .message-input,
 .chat-header {
   display: flex;
@@ -58,6 +59,48 @@ body {
   overflow-y: scroll;
 }
 
+/* Style for messages from the current user */
+.own-message {
+  text-align: right;
+  background-color: #4CAF50; /* Green background color, adjust as needed */
+  color: white; /* Text color, adjust as needed */
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+/* Style for messages from other users */
+.other-message {
+  text-align: left;
+  background-color: #3a92c0; /* Light gray background color, adjust as needed */
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.message{
+  position: relative;
+}
+.message-date{
+  font-size: x-small;
+  position: absolute;
+  bottom: 0;
+}
+
+.own-date{
+  left: 15px;
+}
+
+.other-date{
+  right: 15px;
+}
+
+.own{
+  padding-right: 15px;
+}
+.other{
+  padding-left: 15px;
+}
 .user-container{
   display: flex;
   justify-content: space-between;

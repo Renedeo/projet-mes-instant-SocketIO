@@ -1,12 +1,17 @@
 import React from 'react';
 import { useAuth } from '@/Context/AuthContext';
+import { useSocket } from '@/Context/SocketContext';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const socket  = useSocket()
+  const router = useRouter()
 
   const handleLogout = () => {
     logout();
-    // Additional logic for handling logout
+    socket.emit('logout', { "username": user });
+    router.push('/');
   };
 
   return (
