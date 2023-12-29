@@ -25,6 +25,11 @@ let connectedUser = []
 io.on('connection', (socket) => {
   console.log('🌐 A client has connected');
 
+  socket.on('typing', ({ username, isTyping }) => {
+    console.log(`${username} is ${isTyping ? 'typing' : 'not typing'}`);
+    socket.broadcast.emit('typing', { username, isTyping });
+  });
+
   socket.on('login', (data) => {
     console.log(`👤 User logged in: ${data.username}`);
     connectedUser.push(data);

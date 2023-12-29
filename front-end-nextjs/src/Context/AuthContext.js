@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     const storedUser = JSON.parse(sessionStorage.getItem('user'));
     const storedIsAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     const storedConnectedUsers = JSON.parse(sessionStorage.getItem('connectedUsers'))
-    console.log(storedConnectedUsers)
     
     if (storedUser && storedIsAuthenticated && storedConnectedUsers) {
       setUser(storedUser);
@@ -34,7 +33,6 @@ export const AuthProvider = ({ children }) => {
       };
 
       const handleUserOut = (data) => {
-        console.log(data);
         setConnectedUsers(data);
         sessionStorage.setItem('connectedUsers', JSON.stringify(data));
       };

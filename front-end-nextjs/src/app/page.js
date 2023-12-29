@@ -41,7 +41,6 @@ const Login = () => {
 
       // Gérez la réponse du backend ici
       if (response.ok) {
-        console.log('Connexion réussie !');
         socket.emit('login', {"username" : username})
         login({"username" : username})
         

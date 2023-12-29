@@ -9,28 +9,74 @@ const ChatComponent = () => {
   const { user, connectedUsers, logout } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [typing, setTyping] = useState(false);
   const router = useRouter()
-  const socket  = useSocket()
+  const socket = useSocket()
 
+  // const handleTyping = (isTyping) => {
+  //   setTyping(isTyping);
+
+  //   // Emit 'typing' event to the server
+  //   socket.emit('typing', { username: user, isTyping });
+  // };
+  
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      // User pressed Enter, handle sending the message
+      handleSendMessage();
+    } else {
+      // User pressed another key, indicate typing
+      setTyping(true);
+      
+      // Emit 'typing' event to the server
+      socket.emit('typing', { username: user, isTyping: true });
+    }
+  };
+
+  const handleKeyUp = () => {
+    // User released a key, indicate not typing
+    setTyping(false);
+
+    // Emit 'typing' event to the server
+    socket.emit('typing', { username: user, isTyping: false });
+  };
+  
   useEffect(() => {
     const handleChatMessageResponse = (data) => {
       setMessages([...messages, data]);
-      console.log(data)
-      console.log(messages)
       setNewMessage('');
     };
     
-    socket.on('chat message response', handleChatMessageResponse);
-    
+    const handleTyping = ({ username, isTyping }) => {
+      setTypingUsers((prevTypingUsers) => {
+        if (isTyping) {
+          // Add the username only if it's not already in the array
+          if (!prevTypingUsers.includes(username)) {
+            return [...prevTypingUsers, username];
+          }
+        } else {
+          // Remove the username from the array
+          return prevTypingUsers.filter((user) => user !== username);
+        }
+      
+        // Return the previous array if no changes were made
+        return prevTypingUsers;
+      })};
+  
+      socket.on('typing', handleTyping);
 
-    fetchChatMessages();
-    
-    // Clean up the event listener when the component is unmounted
-    return () => {
-      socket.off('chat message response', handleChatMessageResponse);
-    };
-  }, [messages, socket]);
-  console.log(connectedUsers)
+      socket.on('chat message response', handleChatMessageResponse);
+
+      fetchChatMessages();
+
+      // Clean up the event listener when the component is unmounted
+      return () => {
+        socket.off('chat message response', handleChatMessageResponse);
+        socket.off('typing', handleTyping);
+      };
+    }, [messages, socket]);
 
   const fetchChatMessages = async () => {
     try {
@@ -76,7 +122,7 @@ const ChatComponent = () => {
         author: { username: user },
       });
 
-      
+
     } catch (error) {
       console.error('Error sending message:', error.message);
     }
@@ -84,7 +130,7 @@ const ChatComponent = () => {
 
   const handleLogout = () => {
     logout();
-    socket.emit('logout', {"username": user});
+    socket.emit('logout', { "username": user });
     router.push('/');
   };
 
@@ -113,21 +159,29 @@ const ChatComponent = () => {
             <li key={user}>{user.username}</li>
           ))}
         </ul>
+        <h3>Typing Users:</h3>
+        <ul>
+          {typingUsers.map((username) => (
+            <li key={username}>{username} is typing...</li>
+          ))}
+        </ul>
       </div>
-            
+
         <div className="message-input ChatPageContent ">
           <div>
             <input
               type="text"
               placeholder="Type your message..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {setNewMessage(e.target.value)}}
+              onKeyDown={handleKeyDown}
+              onKeyUp={handleKeyUp}
             />
             <label htmlFor="username"><span>Type your message ...</span></label>
           </div>
 
           <button className='btn' onClick={handleSendMessage}>
-          <SendIcon />
+            <SendIcon />
           </button>
         </div>
 
