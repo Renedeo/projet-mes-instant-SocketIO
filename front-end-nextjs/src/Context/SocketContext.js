@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState(io('http://localhost:4000'));
 
   useEffect(() => {
     // Create a socket connection when the component mounts

@@ -14,7 +14,6 @@ const Login = () => {
   const socket = useSocket()
   const route = useRouter()
   const { login } = useAuth()
-
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
     setErrorMessage('');
@@ -44,12 +43,10 @@ const Login = () => {
       if (response.ok) {
         console.log('Connexion réussie !');
         socket.emit('login', {"username" : username})
-        socket.on('newUser',(data) => {
-          login(data) 
-        })
+        login({"username" : username})
         
-        route.push('/chat');
         // Rediriger ou effectuer d'autres actions après la connexion réussie
+        route.push('/chat');
       } else {
         console.error('Échec de la connexion :', data.message);
         // Mettez à jour le message d'erreur pour l'afficher dans l'interface utilisateur
@@ -92,7 +89,7 @@ const Login = () => {
           </div>
           <button type="submit" className="btn">Se connecter</button>
         {/* Add a Link to the Register page */}
-        <p>Vous n'avez pas de compte? <Link href="/register">S'inscrire</Link></p>
+        <p>Vous n{"\'"}avez pas de compte? <Link href="/register">S'inscrire</Link></p>
         </form>
       </div>
       <div className="blob"></div>

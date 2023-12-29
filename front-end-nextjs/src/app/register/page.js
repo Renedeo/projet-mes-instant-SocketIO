@@ -45,8 +45,7 @@ const Register = () => {
       }
 
       // Assuming your backend returns a success message
-      const responseData = await response.json();
-      console.log(responseData);
+      // const responseData = await response.json();
 
       // Redirect or perform other actions upon successful registration
     } catch (error) {

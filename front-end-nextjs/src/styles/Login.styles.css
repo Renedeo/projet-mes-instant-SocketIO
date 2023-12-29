@@ -51,9 +51,11 @@ body {
   height: 100px;
 }
 
+
 .message-list{
   height: 250px;
   margin: 10px auto;
+  overflow-y: scroll;
 }
 
 .connected-users{

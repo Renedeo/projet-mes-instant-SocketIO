@@ -21,13 +21,24 @@ const io = require('socket.io')(http, {
   }
 });
 
+let connectedUser = []
 io.on('connection', (socket) => {
   console.log('🌐 A client has connected');
 
   socket.on('login', (data) => {
     console.log(`👤 User logged in: ${data.username}`);
-    // users.push(data.nom);
-    io.emit('newUser', data);
+    connectedUser.push(data);
+    console.log(connectedUser)
+    io.emit('newUser', connectedUser);
+  });
+  
+  socket.on('logout', (data) => {
+    console.log(`👤 User logged out: ${data.username}`);
+    
+    // Use filter to remove the user from the connectedUser array
+    connectedUser = connectedUser.filter(user => user.username !== data.username);
+    console.log(connectedUser)
+    io.emit('userOut', connectedUser);
   });
 
   socket.on('chat message', (data) => {
@@ -36,6 +47,7 @@ io.on('connection', (socket) => {
     console.log('💬 Content:', data.content);
     io.emit('chat message response', data)
   });
+
 });
 
 

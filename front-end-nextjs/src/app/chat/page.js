@@ -6,15 +6,31 @@ import SendIcon from '@mui/icons-material/Send';
 import { useSocket } from '@/Context/SocketContext';
 
 const ChatComponent = () => {
-  const { user, isAuthenticated, connectedUsers, logout } = useAuth();
+  const { user, connectedUsers, logout } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const router = useRouter()
   const socket  = useSocket()
-  console.log(connectedUsers)
+
   useEffect(() => {
+    const handleChatMessageResponse = (data) => {
+      setMessages([...messages, data]);
+      console.log(data)
+      console.log(messages)
+      setNewMessage('');
+    };
+    
+    socket.on('chat message response', handleChatMessageResponse);
+    
+
     fetchChatMessages();
-  }, [isAuthenticated]);
+    
+    // Clean up the event listener when the component is unmounted
+    return () => {
+      socket.off('chat message response', handleChatMessageResponse);
+    };
+  }, [messages, socket]);
+  console.log(connectedUsers)
 
   const fetchChatMessages = async () => {
     try {
@@ -30,7 +46,6 @@ const ChatComponent = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       setMessages(data.messages);
     } catch (error) {
       console.error('Error fetching messages:', error.message);
@@ -61,10 +76,7 @@ const ChatComponent = () => {
         author: { username: user },
       });
 
-      socket.on('chat message response', (data) => {
-        setMessages([...messages, data]);
-        setNewMessage('');
-      })
+      
     } catch (error) {
       console.error('Error sending message:', error.message);
     }
@@ -72,8 +84,10 @@ const ChatComponent = () => {
 
   const handleLogout = () => {
     logout();
+    socket.emit('logout', {"username": user});
     router.push('/');
   };
+
 
   return (
     <div className='ChatPageContainer'>
@@ -95,8 +109,8 @@ const ChatComponent = () => {
         <div className='connected-users ChatPageContent'>
         <h3>Connected Users:</h3>
         <ul>
-          {connectedUsers.map((username) => (
-            <li key={username}>{username}</li>
+          {connectedUsers.map((user) => (
+            <li key={user}>{user.username}</li>
           ))}
         </ul>
       </div>
